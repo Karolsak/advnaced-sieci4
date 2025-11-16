@@ -2,19 +2,39 @@
 
 A comprehensive application for DC motor analysis, simulation, and educational problem-solving with advanced multi-physics modeling.
 
-## 🚀 Two Versions Available
+## 🚀 Multiple Versions Available
 
-1. **🌐 Web Version (HTML)** - `dc_motor_simulator.html`
+### 1. **🌐 Web Version (HTML)** - `dc_motor_simulator.html`
    - No installation required - runs directly in any modern browser
    - Beautiful responsive design with gradient UI
    - All features included (6 interactive tabs)
    - Real-time Chart.js visualizations
    - Perfect for quick access and demonstrations
 
-2. **🖥️ Desktop Version (Python)** - `dc_motor_simulator.py`
+### 2. **🖥️ Desktop Version (Python)** - `dc_motor_simulator.py`
    - Full-featured Tkinter application
    - More detailed analysis capabilities
    - Requires Python and dependencies
+
+### 3. **⚡ Shunt Motor Speed Control Simulator** - `shunt_motor_speed_control_advanced.py`
+   - **NEW! Advanced shunt motor speed control analysis**
+   - **Solves Example 30.25** with detailed explanation
+   - **Multi-physics simulation**: Electromagnetic-Thermal-Mechanical coupling
+   - **Real-time ODE solvers**: RK45 and Euler methods
+   - **5 Interactive Tabs**:
+     - Main Control: Example 30.25 solver and parameter adjustment
+     - Dynamic Simulation: Real-time simulation with 4 graphs
+     - Loss Analysis: Detailed loss breakdown and torque analysis
+     - Economic Analysis: Operating costs and projections
+     - Thermal & Derating: Temperature monitoring and derating factors
+   - **Advanced Features**:
+     - Series resistance control (0-20Ω)
+     - Load torque adjustment (0-50 N.m)
+     - Detailed loss models (copper, iron, mechanical, stray)
+     - Thermal time constant analysis
+     - Cost per hour/day/month/year calculations
+     - Auto-scaling responsive interface
+   - See [SHUNT_MOTOR_README.md](SHUNT_MOTOR_README.md) for detailed documentation
 
 ## Problem 7 Solution
 
@@ -315,6 +335,15 @@ The application includes solutions to the following theoretical problems:
 3. **Problem 7**: Field resistance change for speed control
    - Speed increase: 600 → 800 rpm
    - Field resistance increase: +88.31 Ω
+
+4. **Example 30.25**: Armature resistance control for speed reduction
+   - Initial: 240V, 15A, 800 rpm
+   - Question 1: Resistance needed to reduce speed to 400 rpm
+     - **Answer: R_added = 7.70 Ω**
+   - Question 2: Speed when torque is halved with this resistance
+     - **Answer: Speed = 615.58 rpm**
+   - Uses armature resistance control method
+   - Demonstrates speed-torque relationships
 
 ## Mathematical Background
 
