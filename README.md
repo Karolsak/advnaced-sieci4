@@ -1,6 +1,20 @@
 # Advanced DC Motor Multi-Physics Simulator
 
-A comprehensive Python application for DC motor analysis, simulation, and educational problem-solving with advanced multi-physics modeling.
+A comprehensive application for DC motor analysis, simulation, and educational problem-solving with advanced multi-physics modeling.
+
+## 🚀 Two Versions Available
+
+1. **🌐 Web Version (HTML)** - `dc_motor_simulator.html`
+   - No installation required - runs directly in any modern browser
+   - Beautiful responsive design with gradient UI
+   - All features included (6 interactive tabs)
+   - Real-time Chart.js visualizations
+   - Perfect for quick access and demonstrations
+
+2. **🖥️ Desktop Version (Python)** - `dc_motor_simulator.py`
+   - Full-featured Tkinter application
+   - More detailed analysis capabilities
+   - Requires Python and dependencies
 
 ## Problem 7 Solution
 
@@ -209,7 +223,27 @@ sudo dnf install python3-tkinter
 
 ## Usage
 
-### Running the Full Application
+### Option 1: Web Browser (HTML Version)
+Simply open `dc_motor_simulator.html` in any modern web browser:
+```bash
+# Linux/Mac
+open dc_motor_simulator.html
+
+# Windows
+start dc_motor_simulator.html
+
+# Or just double-click the file
+```
+
+**Features of HTML Version:**
+- ✅ No installation required
+- ✅ Runs directly in browser
+- ✅ All features included (6 interactive tabs)
+- ✅ Beautiful responsive design
+- ✅ Real-time Chart.js visualizations
+- ✅ Works on desktop, tablet, and mobile
+
+### Option 2: Python Desktop Application
 ```bash
 python3 dc_motor_simulator.py
 ```
