@@ -1,6 +1,42 @@
 # Advanced DC Motor Multi-Physics Simulator
 
-A comprehensive Python application for DC motor analysis, simulation, and educational problem-solving with advanced multi-physics modeling.
+A comprehensive DC motor analysis and simulation suite available in **two versions**:
+- 🐍 **Python/Tkinter** - Desktop application with advanced features
+- 🌐 **HTML/JavaScript** - Web-based version, no installation required
+
+## 📦 Available Versions
+
+### 🌐 Web Version (HTML/JavaScript) - **RECOMMENDED FOR QUICK START**
+- **File**: `advanced_dc_motor_simulator.html`
+- **Documentation**: [README_HTML_VERSION.md](README_HTML_VERSION.md)
+- **Features**: Zero installation, works in any browser, mobile-friendly
+- **Quick Start**: Just open the HTML file in your browser!
+
+### 🐍 Desktop Version (Python/Tkinter)
+- **File**: `advanced_dc_motor_simulator.py` or `dc_motor_simulator.py`
+- **Documentation**: [README_ADVANCED_SIMULATOR.md](README_ADVANCED_SIMULATOR.md)
+- **Features**: Full-featured desktop application with advanced controls
+- **Quick Start**: `python3 advanced_dc_motor_simulator.py`
+
+---
+
+## 🎯 Latest Features (Both Versions)
+
+### ✅ **Problems 10 & 11 - SOLVED**
+- **Problem 10**: 230V DC shunt motor with field resistance change → **Answer: 1400 rpm**
+- **Problem 11**: 250V DC motor with 3% flux weakening → Complete solution included
+
+### ✅ **Complete Feature Set**
+- Real-time ODE solvers (RK45, Euler)
+- Multi-physics simulation (Electromagnetic-Thermal-Mechanical)
+- Advanced controls (PWM, PID)
+- Thermal analysis with derating
+- Economic lifecycle analysis
+- 9 real-time visualization charts
+- Temperature-dependent modeling
+- Detailed loss breakdown
+
+---
 
 ## Problem 7 Solution
 
