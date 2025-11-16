@@ -92,6 +92,92 @@ class DCMotorProblems:
             'N2': N2
         }
 
+    @staticmethod
+    def problem_7():
+        """
+        Problem 7: DC shunt motor field resistance change for speed control
+        A 250 V shunt motor with Ra = 0.5Ω and Rf = 250Ω drives a constant torque load.
+        Initial: IL = 21A at 600 rpm. Find field resistance change to achieve 800 rpm.
+        Assumption: Linear magnetization curve
+        """
+        # Given data
+        V = 250  # Supply voltage (V)
+        Ra = 0.5  # Armature resistance (Ω)
+        Rf1 = 250  # Initial field resistance (Ω)
+        IL1 = 21  # Initial line current (A)
+        N1 = 600  # Initial speed (rpm)
+        N2 = 800  # Target speed (rpm)
+
+        # Initial conditions
+        If1 = V / Rf1  # Field current
+        Ia1 = IL1 - If1  # Armature current
+        Eb1 = V - Ia1 * Ra  # Back EMF
+
+        # For linear magnetization: Φ ∝ If
+        # For constant torque: T = k*Φ*Ia → If1*Ia1 = If2*Ia2
+        # Therefore: Ia2 = (If1/If2) * Ia1
+
+        # Back EMF equation: Eb = K*Φ*N = K*If*N
+        # Eb1/(If1*N1) = Eb2/(If2*N2)
+        # Also: Eb2 = V - Ia2*Ra = V - (If1*Ia1/If2)*Ra
+
+        # Combining equations:
+        # V - (If1*Ia1/If2)*Ra = Eb1 * (If2/If1) * (N2/N1)
+        # Let x = If2, then:
+        # V - (If1*Ia1/x)*Ra = Eb1 * (x/If1) * (N2/N1)
+        # V - (If1*Ia1*Ra)/x = Eb1 * (N2/N1) * x / If1
+
+        # Multiply both sides by x:
+        # V*x - If1*Ia1*Ra = Eb1 * (N2/N1) * x^2 / If1
+
+        # Rearrange to standard quadratic form: ax^2 + bx + c = 0
+        a = Eb1 * (N2/N1) / If1
+        b = -V
+        c = If1 * Ia1 * Ra
+
+        # Solve quadratic equation
+        discriminant = b**2 - 4*a*c
+        If2_solution1 = (-b + math.sqrt(discriminant)) / (2*a)
+        If2_solution2 = (-b - math.sqrt(discriminant)) / (2*a)
+
+        # Choose the physically reasonable solution (positive and results in reasonable current)
+        # Check both solutions
+        solutions = []
+        for If2 in [If2_solution1, If2_solution2]:
+            if If2 > 0:
+                Ia2 = (If1 * Ia1) / If2
+                Eb2 = V - Ia2 * Ra
+                if Eb2 > 0 and Ia2 > 0 and Ia2 < 100:  # Reasonable current range
+                    IL2 = Ia2 + If2
+                    Rf2 = V / If2
+                    solutions.append({
+                        'If2': If2,
+                        'Ia2': Ia2,
+                        'IL2': IL2,
+                        'Eb2': Eb2,
+                        'Rf2': Rf2,
+                        'delta_Rf': Rf2 - Rf1
+                    })
+
+        # Select the solution with field current closest to original (more practical)
+        if solutions:
+            best_solution = min(solutions, key=lambda s: abs(s['If2'] - If1))
+        else:
+            best_solution = solutions[0] if solutions else None
+
+        return {
+            'initial': {
+                'If1': If1,
+                'Ia1': Ia1,
+                'IL1': IL1,
+                'Eb1': Eb1,
+                'Rf1': Rf1,
+                'N1': N1
+            },
+            'final': best_solution,
+            'target_speed': N2
+        }
+
 
 class DCMotorModel:
     """Mathematical model of DC motor with multi-physics simulation"""
@@ -389,6 +475,54 @@ class AdvancedDCMotorSimulator:
         self.problem_text.insert(tk.END, f"  New Back EMF (Eb₂) = {result4['Eb2']:.2f} V\n")
         self.problem_text.insert(tk.END, f"  Speed ratio N₂/N₁ = {result4['N2']/1000:.4f}\n")
         self.problem_text.insert(tk.END, f"  Expected from Eb₂/Eb₁ × φ₁/φ₂ = {(result4['Eb2']/result4['Eb1'])/1.2:.4f} ✓\n\n")
+
+        # Problem 7
+        self.problem_text.insert(tk.END, "\n" + "=" * 80 + "\n")
+        self.problem_text.insert(tk.END, "PROBLEM 7: DC Shunt Motor Field Resistance Change for Speed Control\n")
+        self.problem_text.insert(tk.END, "=" * 80 + "\n\n")
+
+        self.problem_text.insert(tk.END, "Given Data:\n")
+        self.problem_text.insert(tk.END, "  Supply Voltage (V) = 250 V\n")
+        self.problem_text.insert(tk.END, "  Armature Resistance (Ra) = 0.5 Ω\n")
+        self.problem_text.insert(tk.END, "  Initial Field Resistance (Rf₁) = 250 Ω\n")
+        self.problem_text.insert(tk.END, "  Initial Line Current (IL₁) = 21 A\n")
+        self.problem_text.insert(tk.END, "  Initial Speed (N₁) = 600 rpm\n")
+        self.problem_text.insert(tk.END, "  Target Speed (N₂) = 800 rpm\n")
+        self.problem_text.insert(tk.END, "  Conditions: Constant load torque, Linear magnetization curve\n\n")
+
+        result7 = DCMotorProblems.problem_7()
+
+        self.problem_text.insert(tk.END, "Initial Operating Point:\n")
+        init = result7['initial']
+        self.problem_text.insert(tk.END, f"  Field Current (If₁) = {init['If1']:.3f} A\n")
+        self.problem_text.insert(tk.END, f"  Armature Current (Ia₁) = {init['Ia1']:.3f} A\n")
+        self.problem_text.insert(tk.END, f"  Back EMF (Eb₁) = {init['Eb1']:.2f} V\n\n")
+
+        if result7['final']:
+            final = result7['final']
+            self.problem_text.insert(tk.END, "Final Operating Point (at 800 rpm):\n")
+            self.problem_text.insert(tk.END, f"  New Field Current (If₂) = {final['If2']:.4f} A\n")
+            self.problem_text.insert(tk.END, f"  New Armature Current (Ia₂) = {final['Ia2']:.2f} A\n")
+            self.problem_text.insert(tk.END, f"  New Line Current (IL₂) = {final['IL2']:.2f} A\n")
+            self.problem_text.insert(tk.END, f"  New Back EMF (Eb₂) = {final['Eb2']:.2f} V\n\n")
+
+            self.problem_text.insert(tk.END, "SOLUTION:\n")
+            self.problem_text.insert(tk.END, f"  New Field Resistance (Rf₂) = {final['Rf2']:.2f} Ω\n")
+            self.problem_text.insert(tk.END, f"  Change in Field Resistance (ΔRf) = {final['delta_Rf']:.2f} Ω\n\n")
+
+            if final['delta_Rf'] > 0:
+                self.problem_text.insert(tk.END, f"  The field resistance must be INCREASED by {final['delta_Rf']:.2f} Ω\n")
+            else:
+                self.problem_text.insert(tk.END, f"  The field resistance must be DECREASED by {abs(final['delta_Rf']):.2f} Ω\n")
+
+            self.problem_text.insert(tk.END, "\nVerification:\n")
+            self.problem_text.insert(tk.END, f"  Torque ratio check: If₁×Ia₁ / If₂×Ia₂ = {(init['If1']*init['Ia1'])/(final['If2']*final['Ia2']):.4f}\n")
+            self.problem_text.insert(tk.END, f"  (Should be 1.0 for constant torque) ✓\n")
+            speed_ratio = (final['Eb2']/init['Eb1']) * (init['If1']/final['If2'])
+            self.problem_text.insert(tk.END, f"  Speed ratio from Eb: {speed_ratio:.4f}\n")
+            self.problem_text.insert(tk.END, f"  Expected speed ratio: {result7['target_speed']/init['N1']:.4f} ✓\n")
+        else:
+            self.problem_text.insert(tk.END, "  No valid solution found!\n")
 
     def create_simulation_tab(self):
         """Main simulation tab with controls and real-time graphs"""
