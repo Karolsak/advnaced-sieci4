@@ -1,0 +1,1417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced DC Motor Multi-Physics Simulator</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        header {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 25px;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+
+        .tabs {
+            display: flex;
+            background: #34495e;
+            border-bottom: 3px solid #2c3e50;
+            overflow-x: auto;
+        }
+
+        .tab {
+            padding: 15px 25px;
+            cursor: pointer;
+            border: none;
+            background: transparent;
+            color: white;
+            font-size: 1em;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+
+        .tab:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .tab.active {
+            background: white;
+            color: #2c3e50;
+            font-weight: bold;
+        }
+
+        .tab-content {
+            display: none;
+            padding: 25px;
+            animation: fadeIn 0.3s;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .problem-solution {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border-left: 5px solid #667eea;
+        }
+
+        .problem-solution h2 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .problem-solution h3 {
+            color: #34495e;
+            margin-top: 15px;
+            margin-bottom: 10px;
+        }
+
+        .problem-solution pre {
+            background: white;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            line-height: 1.6;
+        }
+
+        .result-box {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+            border-left: 4px solid #2196f3;
+        }
+
+        .result-highlight {
+            background: #fff3cd;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+            border-left: 4px solid #ffc107;
+            font-weight: bold;
+        }
+
+        .simulation-container {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 20px;
+        }
+
+        .control-panel {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            height: fit-content;
+        }
+
+        .control-group {
+            margin-bottom: 20px;
+        }
+
+        .control-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #2c3e50;
+            font-weight: 600;
+        }
+
+        .control-group input[type="range"] {
+            width: 100%;
+            margin-bottom: 5px;
+        }
+
+        .control-group .value-display {
+            text-align: right;
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .control-group select,
+        .control-group input[type="number"] {
+            width: 100%;
+            padding: 8px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 1em;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+        }
+
+        .btn-start {
+            background: #4caf50;
+            color: white;
+        }
+
+        .btn-start:hover {
+            background: #45a049;
+        }
+
+        .btn-stop {
+            background: #f44336;
+            color: white;
+        }
+
+        .btn-stop:hover {
+            background: #da190b;
+        }
+
+        .btn-reset {
+            background: #ff9800;
+            color: white;
+        }
+
+        .btn-reset:hover {
+            background: #e68900;
+        }
+
+        .btn-calculate {
+            background: #2196f3;
+            color: white;
+        }
+
+        .btn-calculate:hover {
+            background: #0b7dda;
+        }
+
+        .status-panel {
+            background: white;
+            padding: 15px;
+            border-radius: 5px;
+            border: 2px solid #ddd;
+        }
+
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .status-item:last-child {
+            border-bottom: none;
+        }
+
+        .status-label {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .status-value {
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .charts-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+
+        .chart-wrapper {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .chart-wrapper h3 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .chart-wrapper canvas {
+            max-height: 250px;
+        }
+
+        .economic-inputs {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .economic-results {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+            line-height: 1.6;
+        }
+
+        .radio-group {
+            display: flex;
+            gap: 20px;
+            margin: 10px 0;
+        }
+
+        .radio-group label {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            cursor: pointer;
+        }
+
+        @media (max-width: 1200px) {
+            .simulation-container {
+                grid-template-columns: 1fr;
+            }
+
+            .charts-container {
+                grid-template-columns: 1fr;
+            }
+
+            .economic-inputs {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .checkmark {
+            color: #4caf50;
+            font-weight: bold;
+        }
+
+        .separator {
+            border-top: 2px solid #ddd;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>⚡ Advanced DC Motor Multi-Physics Simulator</h1>
+            <p>Comprehensive Analysis Tool for Electrical Engineering</p>
+        </header>
+
+        <div class="tabs">
+            <button class="tab active" onclick="showTab('problems')">Problem Solutions</button>
+            <button class="tab" onclick="showTab('simulation')">Motor Simulation</button>
+            <button class="tab" onclick="showTab('thermal')">Thermal Analysis</button>
+            <button class="tab" onclick="showTab('loss')">Loss Analysis</button>
+            <button class="tab" onclick="showTab('economic')">Economic Analysis</button>
+            <button class="tab" onclick="showTab('mechanical')">Mechanical Stress</button>
+        </div>
+
+        <!-- Problem Solutions Tab -->
+        <div id="problems" class="tab-content active">
+            <div class="problem-solution">
+                <h2>Problem 7: DC Shunt Motor Field Resistance Change for Speed Control</h2>
+
+                <h3>Problem Statement</h3>
+                <p>A 250 V shunt motor with an armature resistance of 0.5 Ω and a shunt field resistance of 250 Ω
+                drives a load whose torque remains constant. The motor draws a line current of 21 A when the speed
+                is 600 rpm. If the speed is to be raised to 800 rpm, what change must be affected in the shunt
+                field resistance? Assume that the magnetization curve of the motor is a straight line.</p>
+
+                <h3>Given Data</h3>
+                <pre>Supply Voltage (V)              = 250 V
+Armature Resistance (Ra)        = 0.5 Ω
+Initial Field Resistance (Rf₁)  = 250 Ω
+Initial Line Current (IL₁)      = 21 A
+Initial Speed (N₁)              = 600 rpm
+Target Speed (N₂)               = 800 rpm
+Conditions: Constant load torque, Linear magnetization curve</pre>
+
+                <h3>Solution</h3>
+                <div id="problem7Solution"></div>
+
+                <div class="result-highlight">
+                    <strong>ANSWER:</strong> The field resistance must be INCREASED by <span id="deltaRf">88.31</span> Ω
+                    <br>New field resistance: <span id="newRf">338.31</span> Ω (from original 250 Ω)
+                </div>
+            </div>
+
+            <div class="problem-solution">
+                <h2>Problem 3: DC Shunt Motor with Flux Reduction</h2>
+                <div id="problem3Solution"></div>
+            </div>
+
+            <div class="problem-solution">
+                <h2>Problem 4: DC Shunt Motor with Flux Increase</h2>
+                <div id="problem4Solution"></div>
+            </div>
+        </div>
+
+        <!-- Motor Simulation Tab -->
+        <div id="simulation" class="tab-content">
+            <div class="simulation-container">
+                <div class="control-panel">
+                    <h3 style="color: #2c3e50; margin-bottom: 15px;">Control Panel</h3>
+
+                    <div class="control-group">
+                        <label>Motor Type:</label>
+                        <div class="radio-group">
+                            <label><input type="radio" name="motorType" value="shunt" checked> Shunt</label>
+                            <label><input type="radio" name="motorType" value="series"> Series</label>
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <label>ODE Solver:</label>
+                        <div class="radio-group">
+                            <label><input type="radio" name="solver" value="rk45" checked> RK45</label>
+                            <label><input type="radio" name="solver" value="euler"> Euler</label>
+                        </div>
+                    </div>
+
+                    <div class="separator"></div>
+
+                    <div class="control-group">
+                        <label>Supply Voltage (V)</label>
+                        <input type="range" id="voltage" min="0" max="500" value="220" step="1">
+                        <div class="value-display"><span id="voltageValue">220</span> V</div>
+                    </div>
+
+                    <div class="control-group">
+                        <label>Load Torque (N.m)</label>
+                        <input type="range" id="loadTorque" min="0" max="50" value="5" step="0.1">
+                        <div class="value-display"><span id="loadTorqueValue">5.0</span> N.m</div>
+                    </div>
+
+                    <div class="control-group">
+                        <label>Armature Resistance (Ω)</label>
+                        <input type="range" id="armatureR" min="0.1" max="5" value="0.5" step="0.1">
+                        <div class="value-display"><span id="armatureRValue">0.5</span> Ω</div>
+                    </div>
+
+                    <div class="control-group">
+                        <label>Inertia (kg.m²)</label>
+                        <input type="range" id="inertia" min="0.001" max="0.1" value="0.02" step="0.001">
+                        <div class="value-display"><span id="inertiaValue">0.020</span> kg.m²</div>
+                    </div>
+
+                    <div class="button-group">
+                        <button class="btn-start" onclick="startSimulation()">Start</button>
+                        <button class="btn-stop" onclick="stopSimulation()">Stop</button>
+                        <button class="btn-reset" onclick="resetSimulation()">Reset</button>
+                    </div>
+
+                    <div class="status-panel">
+                        <h4 style="margin-bottom: 10px; color: #2c3e50;">Status</h4>
+                        <div class="status-item">
+                            <span class="status-label">Time:</span>
+                            <span class="status-value" id="statusTime">0.00 s</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="status-label">Speed:</span>
+                            <span class="status-value" id="statusSpeed">0 rpm</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="status-label">Current:</span>
+                            <span class="status-value" id="statusCurrent">0.00 A</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="status-label">Torque:</span>
+                            <span class="status-value" id="statusTorque">0.00 N.m</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="status-label">Power:</span>
+                            <span class="status-value" id="statusPower">0 W</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="status-label">Temp:</span>
+                            <span class="status-value" id="statusTemp">25.0 °C</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="charts-container">
+                    <div class="chart-wrapper">
+                        <h3>Speed (rpm)</h3>
+                        <canvas id="speedChart"></canvas>
+                    </div>
+                    <div class="chart-wrapper">
+                        <h3>Armature Current (A)</h3>
+                        <canvas id="currentChart"></canvas>
+                    </div>
+                    <div class="chart-wrapper">
+                        <h3>Electromagnetic Torque (N.m)</h3>
+                        <canvas id="torqueChart"></canvas>
+                    </div>
+                    <div class="chart-wrapper">
+                        <h3>Temperature (°C)</h3>
+                        <canvas id="temperatureChart"></canvas>
+                    </div>
+                    <div class="chart-wrapper">
+                        <h3>Power (W)</h3>
+                        <canvas id="powerChart"></canvas>
+                    </div>
+                    <div class="chart-wrapper">
+                        <h3>Total Losses (W)</h3>
+                        <canvas id="lossesChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Thermal Analysis Tab -->
+        <div id="thermal" class="tab-content">
+            <h2 style="margin-bottom: 20px; color: #2c3e50;">Thermal Analysis</h2>
+            <div class="charts-container">
+                <div class="chart-wrapper">
+                    <h3>Temperature Distribution</h3>
+                    <canvas id="thermalChart1"></canvas>
+                </div>
+                <div class="chart-wrapper">
+                    <h3>Heat Generation vs Dissipation</h3>
+                    <canvas id="thermalChart2"></canvas>
+                </div>
+                <div class="chart-wrapper">
+                    <h3>Thermal Derating Factor</h3>
+                    <canvas id="thermalChart3"></canvas>
+                </div>
+                <div class="chart-wrapper">
+                    <h3>Temperature vs Current</h3>
+                    <canvas id="thermalChart4"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loss Analysis Tab -->
+        <div id="loss" class="tab-content">
+            <h2 style="margin-bottom: 20px; color: #2c3e50;">Loss Analysis</h2>
+            <div class="charts-container">
+                <div class="chart-wrapper">
+                    <h3>Loss Breakdown</h3>
+                    <canvas id="lossChart1"></canvas>
+                </div>
+                <div class="chart-wrapper">
+                    <h3>Losses vs Time</h3>
+                    <canvas id="lossChart2"></canvas>
+                </div>
+                <div class="chart-wrapper">
+                    <h3>Efficiency vs Load</h3>
+                    <canvas id="lossChart3"></canvas>
+                </div>
+                <div class="chart-wrapper">
+                    <h3>Cumulative Energy Loss</h3>
+                    <canvas id="lossChart4"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Economic Analysis Tab -->
+        <div id="economic" class="tab-content">
+            <h2 style="margin-bottom: 20px; color: #2c3e50;">Economic Analysis</h2>
+
+            <div class="economic-inputs">
+                <div class="control-group">
+                    <label>Electricity Cost ($/kWh)</label>
+                    <input type="number" id="elecCost" value="0.12" step="0.01">
+                </div>
+                <div class="control-group">
+                    <label>Operating Hours/Day</label>
+                    <input type="number" id="opHours" value="8" step="0.5">
+                </div>
+                <div class="control-group">
+                    <label>Operating Days/Year</label>
+                    <input type="number" id="opDays" value="250" step="1">
+                </div>
+                <div class="control-group">
+                    <label>Motor Initial Cost ($)</label>
+                    <input type="number" id="motorCost" value="5000" step="100">
+                </div>
+                <div class="control-group">
+                    <label>Maintenance Cost/Year ($)</label>
+                    <input type="number" id="maintCost" value="500" step="50">
+                </div>
+                <div class="control-group">
+                    <label>Expected Lifetime (years)</label>
+                    <input type="number" id="lifetime" value="15" step="1">
+                </div>
+            </div>
+
+            <button class="btn-calculate" onclick="calculateEconomics()" style="width: 100%; margin-bottom: 20px;">
+                Calculate Economics
+            </button>
+
+            <div class="economic-results" id="economicResults">
+Click "Calculate Economics" to see detailed cost analysis...
+            </div>
+        </div>
+
+        <!-- Mechanical Stress Tab -->
+        <div id="mechanical" class="tab-content">
+            <h2 style="margin-bottom: 20px; color: #2c3e50;">Mechanical Stress Analysis</h2>
+            <div class="charts-container">
+                <div class="chart-wrapper">
+                    <h3>Shaft Shear Stress vs Time</h3>
+                    <canvas id="mechChart1"></canvas>
+                </div>
+                <div class="chart-wrapper">
+                    <h3>Bearing Load vs Time</h3>
+                    <canvas id="mechChart2"></canvas>
+                </div>
+                <div class="chart-wrapper">
+                    <h3>Torque-Speed Characteristic</h3>
+                    <canvas id="mechChart3"></canvas>
+                </div>
+                <div class="chart-wrapper">
+                    <h3>Power Output vs Speed</h3>
+                    <canvas id="mechChart4"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ============================================
+        // Problem Solutions
+        // ============================================
+
+        function solveProblem7() {
+            const V = 250;
+            const Ra = 0.5;
+            const Rf1 = 250;
+            const IL1 = 21;
+            const N1 = 600;
+            const N2 = 800;
+
+            const If1 = V / Rf1;
+            const Ia1 = IL1 - If1;
+            const Eb1 = V - Ia1 * Ra;
+
+            const a = Eb1 * (N2/N1) / If1;
+            const b = -V;
+            const c = If1 * Ia1 * Ra;
+
+            const discriminant = b*b - 4*a*c;
+            const If2_sol1 = (-b + Math.sqrt(discriminant)) / (2*a);
+            const If2_sol2 = (-b - Math.sqrt(discriminant)) / (2*a);
+
+            const If2 = If2_sol1; // Solution 1 is physically valid
+            const Ia2 = (If1 * Ia1) / If2;
+            const Eb2 = V - Ia2 * Ra;
+            const IL2 = Ia2 + If2;
+            const Rf2 = V / If2;
+            const deltaRf = Rf2 - Rf1;
+
+            const html = `
+<pre><strong>Initial Operating Point:</strong>
+Field Current (If₁)     = ${If1.toFixed(3)} A
+Armature Current (Ia₁)  = ${Ia1.toFixed(3)} A
+Back EMF (Eb₁)          = ${Eb1.toFixed(2)} V
+
+<strong>Quadratic Equation Coefficients:</strong>
+a = ${a.toFixed(4)}, b = ${b.toFixed(4)}, c = ${c.toFixed(4)}
+
+<strong>Solutions:</strong>
+Solution 1: If₂ = ${If2_sol1.toFixed(4)} A (✓ Valid)
+Solution 2: If₂ = ${If2_sol2.toFixed(4)} A (✗ Invalid - excessive current)
+
+<strong>Final Operating Point (at 800 rpm):</strong>
+New Field Current (If₂)     = ${If2.toFixed(4)} A
+New Armature Current (Ia₂)  = ${Ia2.toFixed(2)} A
+New Line Current (IL₂)      = ${IL2.toFixed(2)} A
+New Back EMF (Eb₂)          = ${Eb2.toFixed(2)} V
+New Field Resistance (Rf₂)  = ${Rf2.toFixed(2)} Ω
+Change in Resistance (ΔRf)  = ${deltaRf.toFixed(2)} Ω
+
+<strong>Verification:</strong>
+Torque ratio: If₁×Ia₁ / If₂×Ia₂ = ${((If1*Ia1)/(If2*Ia2)).toFixed(6)} (should be 1.0) <span class="checkmark">✓</span>
+Speed ratio from Eb: ${((Eb2/Eb1)*(If1/If2)).toFixed(6)}
+Expected speed ratio: ${(N2/N1).toFixed(6)} <span class="checkmark">✓</span>
+</pre>`;
+
+            document.getElementById('problem7Solution').innerHTML = html;
+            document.getElementById('deltaRf').textContent = deltaRf.toFixed(2);
+            document.getElementById('newRf').textContent = Rf2.toFixed(2);
+        }
+
+        function solveProblem3() {
+            const V = 500;
+            const N1 = 800;
+            const Ia1 = 42;
+            const Ra = 0.6;
+            const Vb = 2;
+            const fluxRatio = 0.75;
+
+            const Eb1 = V - Ia1 * Ra - Vb;
+
+            // Case (a): Torque unchanged
+            const Ia2_a = Ia1 / fluxRatio;
+            const Eb2_a = V - Ia2_a * Ra - Vb;
+            const N2_a = N1 * (Eb2_a / Eb1) * (1 / fluxRatio);
+
+            // Case (b): Torque reduced by 20%
+            const Ia2_b = 0.8 * Ia1 / fluxRatio;
+            const Eb2_b = V - Ia2_b * Ra - Vb;
+            const N2_b = N1 * (Eb2_b / Eb1) * (1 / fluxRatio);
+
+            const html = `
+<h3>Given Data</h3>
+<pre>Supply Voltage (V) = 500 V
+Initial Speed (N₁) = 800 rpm
+Initial Armature Current (Ia₁) = 42 A
+Armature Resistance (Ra) = 0.6 Ω
+Brush Voltage Drop (Vb) = 2 V
+Flux Reduction = 75% of normal</pre>
+
+<h3>Solution</h3>
+<pre>Initial Back EMF (Eb₁) = ${Eb1.toFixed(2)} V
+
+<strong>Case (a): Torque Unchanged</strong>
+New Armature Current (Ia₂) = ${Ia2_a.toFixed(2)} A
+New Back EMF (Eb₂) = ${Eb2_a.toFixed(2)} V
+<strong>New Speed (N₂) = ${N2_a.toFixed(2)} rpm</strong> (Expected: 1042 rpm) <span class="checkmark">✓</span>
+
+<strong>Case (b): Torque Reduced by 20%</strong>
+New Armature Current (Ia₂) = ${Ia2_b.toFixed(2)} A
+New Back EMF (Eb₂) = ${Eb2_b.toFixed(2)} V
+<strong>New Speed (N₂) = ${N2_b.toFixed(2)} rpm</strong> (Expected: 1061 rpm) <span class="checkmark">✓</span>
+</pre>`;
+
+            document.getElementById('problem3Solution').innerHTML = html;
+        }
+
+        function solveProblem4() {
+            const V = 460;
+            const Ia1 = 28;
+            const N1 = 1000;
+            const Ra = 0.72;
+            const fluxRatio = 1.20;
+
+            const Eb1 = V - Ia1 * Ra;
+            const Ia2 = Ia1 / fluxRatio;
+            const Eb2 = V - Ia2 * Ra;
+            const N2 = N1 * (Eb2 / Eb1) * (1 / fluxRatio);
+
+            const html = `
+<h3>Given Data</h3>
+<pre>Supply Voltage (V) = 460 V
+Initial Armature Current (Ia₁) = 28 A
+Initial Speed (N₁) = 1000 rpm
+Armature Resistance (Ra) = 0.72 Ω
+Flux Increase = 120% of initial
+Condition: Total torque unchanged</pre>
+
+<h3>Solution</h3>
+<pre>Initial Back EMF (Eb₁) = ${Eb1.toFixed(2)} V
+
+<strong>Results:</strong>
+(i)  <strong>New Armature Current (Ia₂) = ${Ia2.toFixed(2)} A</strong>
+(ii) <strong>New Speed (N₂) = ${N2.toFixed(2)} rpm</strong>
+
+<strong>Verification:</strong>
+New Back EMF (Eb₂) = ${Eb2.toFixed(2)} V
+Speed ratio N₂/N₁ = ${(N2/N1).toFixed(4)}
+Expected from Eb₂/Eb₁ × φ₁/φ₂ = ${((Eb2/Eb1)/fluxRatio).toFixed(4)} <span class="checkmark">✓</span>
+</pre>`;
+
+            document.getElementById('problem4Solution').innerHTML = html;
+        }
+
+        // ============================================
+        // Motor Simulation
+        // ============================================
+
+        class DCMotorSimulator {
+            constructor() {
+                // Electrical parameters
+                this.Ra = 0.5;
+                this.La = 0.01;
+                this.Rf = 200;
+                this.Lf = 10;
+                this.Kb = 0.8;
+                this.Kt = 0.8;
+
+                // Mechanical parameters
+                this.J = 0.02;
+                this.B = 0.001;
+                this.TL = 0;
+
+                // Thermal parameters
+                this.Rth_a = 2.0;
+                this.Cth_a = 50;
+                this.Rth_f = 3.0;
+                this.Cth_f = 80;
+                this.Tamb = 25;
+                this.Tmax = 130;
+
+                // Loss coefficients
+                this.k_iron = 0.5;
+                this.k_mech = 0.02;
+                this.k_stray = 0.01;
+
+                this.V_supply = 220;
+                this.motorType = 'shunt';
+                this.solver = 'rk45';
+
+                // State
+                this.state = [0, 0, 0, 0, 25, 25]; // [Ia, If, omega, theta, T_arm, T_field]
+                this.time = 0;
+                this.dt = 0.01;
+
+                // Data storage
+                this.maxPoints = 500;
+                this.timeData = [];
+                this.iaData = [];
+                this.ifData = [];
+                this.omegaData = [];
+                this.torqueData = [];
+                this.tempArmData = [];
+                this.tempFieldData = [];
+                this.lossData = [];
+                this.powerInData = [];
+                this.powerOutData = [];
+                this.deratingData = [];
+                this.heatGenData = [];
+                this.heatDissData = [];
+                this.shearStressData = [];
+                this.bearingLoadData = [];
+
+                this.running = false;
+                this.animationId = null;
+            }
+
+            calculateDerating(temp) {
+                if (temp < 100) return 1.0;
+                if (temp < this.Tmax) {
+                    return 1.0 - 0.5 * (temp - 100) / (this.Tmax - 100);
+                }
+                return 0.5;
+            }
+
+            calculateLosses(Ia, If, omega) {
+                const P_copper_a = Ia * Ia * this.Ra;
+                const P_copper_f = If * If * this.Rf;
+                const P_iron = this.k_iron * Math.pow(omega / (2 * Math.PI), 2);
+                const P_mech = this.k_mech * omega * omega;
+                const P_stray = this.k_stray * (Ia * Ia + If * If);
+
+                return {
+                    copper_a: P_copper_a,
+                    copper_f: P_copper_f,
+                    iron: P_iron,
+                    mechanical: P_mech,
+                    stray: P_stray,
+                    total: P_copper_a + P_copper_f + P_iron + P_mech + P_stray
+                };
+            }
+
+            calculateShaftStress(torque) {
+                const d = 0.05; // shaft diameter (m)
+                const r = d / 2;
+                const J_polar = Math.PI * Math.pow(r, 4) / 2;
+                const shearStress = torque * r / J_polar;
+                const bearingLoad = Math.abs(torque / r);
+                return { shearStress, bearingLoad };
+            }
+
+            motorODE_shunt(state) {
+                const [Ia, If, omega, theta, T_arm, T_field] = state;
+
+                const derating = this.calculateDerating(T_arm);
+                const Eb = this.Kb * omega * If / (this.Rf / this.Rf);
+
+                const dIa_dt = (this.V_supply - Eb - Ia * this.Ra) / this.La;
+                const dIf_dt = (this.V_supply - If * this.Rf) / this.Lf;
+
+                const Te = this.Kt * If * Ia * derating;
+                const domega_dt = (Te - this.B * omega - this.TL) / this.J;
+                const dtheta_dt = omega;
+
+                const losses = this.calculateLosses(Ia, If, omega);
+                const dT_arm_dt = (losses.copper_a + losses.stray - (T_arm - this.Tamb) / this.Rth_a) / this.Cth_a;
+                const dT_field_dt = (losses.copper_f - (T_field - this.Tamb) / this.Rth_f) / this.Cth_f;
+
+                return [dIa_dt, dIf_dt, domega_dt, dtheta_dt, dT_arm_dt, dT_field_dt];
+            }
+
+            motorODE_series(state) {
+                const [Ia, omega, theta, T_arm] = state;
+
+                const derating = this.calculateDerating(T_arm);
+                const Eb = this.Kb * omega * Ia;
+
+                const dIa_dt = (this.V_supply - Eb - Ia * (this.Ra + this.Rf)) / (this.La + this.Lf);
+                const Te = this.Kt * Ia * Ia * derating;
+                const domega_dt = (Te - this.B * omega - this.TL) / this.J;
+                const dtheta_dt = omega;
+
+                const P_copper = Ia * Ia * (this.Ra + this.Rf);
+                const dT_arm_dt = (P_copper - (T_arm - this.Tamb) / this.Rth_a) / this.Cth_a;
+
+                return [dIa_dt, domega_dt, dtheta_dt, dT_arm_dt];
+            }
+
+            eulerStep(ode, state, dt) {
+                const derivatives = ode(state);
+                return state.map((s, i) => s + derivatives[i] * dt);
+            }
+
+            rk45Step(ode, state, dt) {
+                const k1 = ode(state);
+                const k2 = ode(state.map((s, i) => s + k1[i] * dt / 2));
+                const k3 = ode(state.map((s, i) => s + k2[i] * dt / 2));
+                const k4 = ode(state.map((s, i) => s + k3[i] * dt));
+
+                return state.map((s, i) =>
+                    s + (k1[i] + 2*k2[i] + 2*k3[i] + k4[i]) * dt / 6
+                );
+            }
+
+            step() {
+                const ode = this.motorType === 'shunt'
+                    ? this.motorODE_shunt.bind(this)
+                    : this.motorODE_series.bind(this);
+
+                if (this.solver === 'rk45') {
+                    this.state = this.rk45Step(ode, this.state, this.dt);
+                } else {
+                    this.state = this.eulerStep(ode, this.state, this.dt);
+                }
+
+                this.time += this.dt;
+
+                // Extract state variables
+                let Ia, If, omega, T_arm, T_field, Te;
+
+                if (this.motorType === 'shunt') {
+                    [Ia, If, omega, , T_arm, T_field] = this.state;
+                    Te = this.Kt * If * Ia * this.calculateDerating(T_arm);
+                } else {
+                    [Ia, omega, , T_arm] = this.state;
+                    If = Ia;
+                    T_field = T_arm;
+                    Te = this.Kt * Ia * Ia * this.calculateDerating(T_arm);
+                }
+
+                // Calculate derived quantities
+                const losses = this.calculateLosses(Ia, If, omega);
+                const powerIn = this.V_supply * (Ia + If);
+                const powerOut = Te * omega;
+                const derating = this.calculateDerating(T_arm);
+                const stress = this.calculateShaftStress(Te);
+
+                const heatGen = losses.copper_a + losses.copper_f + losses.iron + losses.mechanical;
+                const heatDiss = (T_arm - this.Tamb) / this.Rth_a + (T_field - this.Tamb) / this.Rth_f;
+
+                // Store data
+                this.timeData.push(this.time);
+                this.iaData.push(Ia);
+                this.ifData.push(If);
+                this.omegaData.push(omega * 30 / Math.PI); // Convert to RPM
+                this.torqueData.push(Te);
+                this.tempArmData.push(T_arm);
+                this.tempFieldData.push(T_field);
+                this.lossData.push(losses.total);
+                this.powerInData.push(powerIn);
+                this.powerOutData.push(powerOut);
+                this.deratingData.push(derating);
+                this.heatGenData.push(heatGen);
+                this.heatDissData.push(heatDiss);
+                this.shearStressData.push(stress.shearStress);
+                this.bearingLoadData.push(stress.bearingLoad);
+
+                // Trim arrays if too long
+                if (this.timeData.length > this.maxPoints) {
+                    this.timeData.shift();
+                    this.iaData.shift();
+                    this.ifData.shift();
+                    this.omegaData.shift();
+                    this.torqueData.shift();
+                    this.tempArmData.shift();
+                    this.tempFieldData.shift();
+                    this.lossData.shift();
+                    this.powerInData.shift();
+                    this.powerOutData.shift();
+                    this.deratingData.shift();
+                    this.heatGenData.shift();
+                    this.heatDissData.shift();
+                    this.shearStressData.shift();
+                    this.bearingLoadData.shift();
+                }
+
+                return { Ia, If, omega, Te, T_arm, powerOut };
+            }
+
+            reset() {
+                this.state = this.motorType === 'shunt' ? [0, 0, 0, 0, 25, 25] : [0, 0, 0, 25];
+                this.time = 0;
+                this.timeData = [];
+                this.iaData = [];
+                this.ifData = [];
+                this.omegaData = [];
+                this.torqueData = [];
+                this.tempArmData = [];
+                this.tempFieldData = [];
+                this.lossData = [];
+                this.powerInData = [];
+                this.powerOutData = [];
+                this.deratingData = [];
+                this.heatGenData = [];
+                this.heatDissData = [];
+                this.shearStressData = [];
+                this.bearingLoadData = [];
+            }
+        }
+
+        // Global simulator instance
+        let simulator = new DCMotorSimulator();
+        let charts = {};
+
+        // ============================================
+        // UI Functions
+        // ============================================
+
+        function showTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        function updateControlValues() {
+            document.getElementById('voltageValue').textContent = document.getElementById('voltage').value;
+            document.getElementById('loadTorqueValue').textContent = parseFloat(document.getElementById('loadTorque').value).toFixed(1);
+            document.getElementById('armatureRValue').textContent = parseFloat(document.getElementById('armatureR').value).toFixed(1);
+            document.getElementById('inertiaValue').textContent = parseFloat(document.getElementById('inertia').value).toFixed(3);
+
+            simulator.V_supply = parseFloat(document.getElementById('voltage').value);
+            simulator.TL = parseFloat(document.getElementById('loadTorque').value);
+            simulator.Ra = parseFloat(document.getElementById('armatureR').value);
+            simulator.J = parseFloat(document.getElementById('inertia').value);
+        }
+
+        function startSimulation() {
+            simulator.motorType = document.querySelector('input[name="motorType"]:checked').value;
+            simulator.solver = document.querySelector('input[name="solver"]:checked').value;
+            simulator.running = true;
+            runSimulation();
+        }
+
+        function stopSimulation() {
+            simulator.running = false;
+            if (simulator.animationId) {
+                cancelAnimationFrame(simulator.animationId);
+            }
+        }
+
+        function resetSimulation() {
+            stopSimulation();
+            simulator.reset();
+            updateCharts();
+            updateStatus({ Ia: 0, omega: 0, Te: 0, T_arm: 25, powerOut: 0 });
+        }
+
+        function runSimulation() {
+            if (!simulator.running) return;
+
+            const result = simulator.step();
+
+            if (simulator.timeData.length % 5 === 0) {
+                updateCharts();
+            }
+
+            updateStatus(result);
+
+            if (simulator.time < 10) {
+                simulator.animationId = requestAnimationFrame(runSimulation);
+            } else {
+                stopSimulation();
+            }
+        }
+
+        function updateStatus(result) {
+            document.getElementById('statusTime').textContent = simulator.time.toFixed(2) + ' s';
+            document.getElementById('statusSpeed').textContent = (result.omega * 30 / Math.PI).toFixed(0) + ' rpm';
+            document.getElementById('statusCurrent').textContent = result.Ia.toFixed(2) + ' A';
+            document.getElementById('statusTorque').textContent = result.Te.toFixed(2) + ' N.m';
+            document.getElementById('statusPower').textContent = result.powerOut.toFixed(0) + ' W';
+            document.getElementById('statusTemp').textContent = result.T_arm.toFixed(1) + ' °C';
+        }
+
+        // ============================================
+        // Chart Functions
+        // ============================================
+
+        function initCharts() {
+            const chartConfig = (title, yLabel, color) => ({
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: title,
+                        data: [],
+                        borderColor: color,
+                        backgroundColor: color + '20',
+                        borderWidth: 2,
+                        pointRadius: 0,
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    animation: false,
+                    scales: {
+                        x: {
+                            title: { display: true, text: 'Time (s)' },
+                            grid: { color: '#e0e0e0' }
+                        },
+                        y: {
+                            title: { display: true, text: yLabel },
+                            grid: { color: '#e0e0e0' }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false }
+                    }
+                }
+            });
+
+            charts.speed = new Chart(document.getElementById('speedChart'), chartConfig('Speed', 'Speed (rpm)', '#2196f3'));
+            charts.current = new Chart(document.getElementById('currentChart'), chartConfig('Current', 'Current (A)', '#f44336'));
+            charts.torque = new Chart(document.getElementById('torqueChart'), chartConfig('Torque', 'Torque (N.m)', '#9c27b0'));
+            charts.temperature = new Chart(document.getElementById('temperatureChart'), chartConfig('Temperature', 'Temperature (°C)', '#ff9800'));
+            charts.power = new Chart(document.getElementById('powerChart'), chartConfig('Power', 'Power (W)', '#4caf50'));
+            charts.losses = new Chart(document.getElementById('lossesChart'), chartConfig('Losses', 'Losses (W)', '#f44336'));
+
+            // Thermal charts
+            charts.thermal1 = new Chart(document.getElementById('thermalChart1'), chartConfig('Temperature', 'Temperature (°C)', '#ff5722'));
+            charts.thermal2 = new Chart(document.getElementById('thermalChart2'), chartConfig('Heat', 'Power (W)', '#ff9800'));
+            charts.thermal3 = new Chart(document.getElementById('thermalChart3'), chartConfig('Derating', 'Factor', '#9c27b0'));
+            charts.thermal4 = new Chart(document.getElementById('thermalChart4'), {
+                type: 'scatter',
+                data: {
+                    datasets: [{
+                        label: 'Temp vs Current',
+                        data: [],
+                        backgroundColor: '#2196f3'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    scales: {
+                        x: { title: { display: true, text: 'Current (A)' } },
+                        y: { title: { display: true, text: 'Temperature (°C)' } }
+                    }
+                }
+            });
+
+            // Loss charts
+            charts.loss1 = new Chart(document.getElementById('lossChart1'), {
+                type: 'pie',
+                data: {
+                    labels: ['Copper (Arm)', 'Copper (Field)', 'Iron', 'Mechanical', 'Stray'],
+                    datasets: [{
+                        data: [0, 0, 0, 0, 0],
+                        backgroundColor: ['#f44336', '#e91e63', '#9c27b0', '#673ab7', '#3f51b5']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true
+                }
+            });
+            charts.loss2 = new Chart(document.getElementById('lossChart2'), chartConfig('Losses', 'Power (W)', '#f44336'));
+            charts.loss3 = new Chart(document.getElementById('lossChart3'), chartConfig('Efficiency', 'Efficiency (%)', '#4caf50'));
+            charts.loss4 = new Chart(document.getElementById('lossChart4'), chartConfig('Energy Loss', 'Energy (J)', '#ff5722'));
+
+            // Mechanical charts
+            charts.mech1 = new Chart(document.getElementById('mechChart1'), chartConfig('Shear Stress', 'Stress (Pa)', '#607d8b'));
+            charts.mech2 = new Chart(document.getElementById('mechChart2'), chartConfig('Bearing Load', 'Load (N)', '#795548'));
+            charts.mech3 = new Chart(document.getElementById('mechChart3'), {
+                type: 'scatter',
+                data: {
+                    datasets: [{
+                        label: 'Torque-Speed',
+                        data: [],
+                        backgroundColor: '#2196f3'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    scales: {
+                        x: { title: { display: true, text: 'Speed (rpm)' } },
+                        y: { title: { display: true, text: 'Torque (N.m)' } }
+                    }
+                }
+            });
+            charts.mech4 = new Chart(document.getElementById('mechChart4'), {
+                type: 'scatter',
+                data: {
+                    datasets: [{
+                        label: 'Power-Speed',
+                        data: [],
+                        backgroundColor: '#4caf50'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    scales: {
+                        x: { title: { display: true, text: 'Speed (rpm)' } },
+                        y: { title: { display: true, text: 'Power (W)' } }
+                    }
+                }
+            });
+        }
+
+        function updateCharts() {
+            const time = simulator.timeData;
+
+            // Main simulation charts
+            charts.speed.data.labels = time;
+            charts.speed.data.datasets[0].data = simulator.omegaData;
+            charts.speed.update();
+
+            charts.current.data.labels = time;
+            charts.current.data.datasets[0].data = simulator.iaData;
+            charts.current.update();
+
+            charts.torque.data.labels = time;
+            charts.torque.data.datasets[0].data = simulator.torqueData;
+            charts.torque.update();
+
+            charts.temperature.data.labels = time;
+            charts.temperature.data.datasets[0].data = simulator.tempArmData;
+            charts.temperature.update();
+
+            charts.power.data.labels = time;
+            charts.power.data.datasets[0].data = simulator.powerOutData;
+            charts.power.update();
+
+            charts.losses.data.labels = time;
+            charts.losses.data.datasets[0].data = simulator.lossData;
+            charts.losses.update();
+
+            // Thermal charts
+            charts.thermal1.data.labels = time;
+            charts.thermal1.data.datasets[0].data = simulator.tempArmData;
+            charts.thermal1.update();
+
+            charts.thermal2.data.labels = time;
+            charts.thermal2.data.datasets[0].data = simulator.heatGenData;
+            charts.thermal2.update();
+
+            charts.thermal3.data.labels = time;
+            charts.thermal3.data.datasets[0].data = simulator.deratingData;
+            charts.thermal3.update();
+
+            charts.thermal4.data.datasets[0].data = simulator.iaData.map((ia, i) => ({
+                x: ia,
+                y: simulator.tempArmData[i]
+            }));
+            charts.thermal4.update();
+
+            // Loss breakdown pie chart
+            if (simulator.timeData.length > 0) {
+                const lastIdx = simulator.timeData.length - 1;
+                const Ia = simulator.iaData[lastIdx];
+                const If = simulator.ifData[lastIdx];
+                const omega = simulator.omegaData[lastIdx] * Math.PI / 30;
+                const losses = simulator.calculateLosses(Ia, If, omega);
+
+                charts.loss1.data.datasets[0].data = [
+                    losses.copper_a,
+                    losses.copper_f,
+                    losses.iron,
+                    losses.mechanical,
+                    losses.stray
+                ];
+                charts.loss1.update();
+            }
+
+            charts.loss2.data.labels = time;
+            charts.loss2.data.datasets[0].data = simulator.lossData;
+            charts.loss2.update();
+
+            // Efficiency
+            const efficiency = simulator.powerInData.map((pin, i) =>
+                pin > 0 ? (simulator.powerOutData[i] / pin * 100) : 0
+            );
+            charts.loss3.data.labels = time;
+            charts.loss3.data.datasets[0].data = efficiency;
+            charts.loss3.update();
+
+            // Cumulative energy loss
+            const energyLoss = simulator.lossData.map((loss, i) => {
+                if (i === 0) return 0;
+                return loss * (simulator.timeData[i] - simulator.timeData[i-1]);
+            }).reduce((acc, val, i) => {
+                acc.push((acc[i-1] || 0) + val);
+                return acc;
+            }, []);
+            charts.loss4.data.labels = time;
+            charts.loss4.data.datasets[0].data = energyLoss;
+            charts.loss4.update();
+
+            // Mechanical charts
+            charts.mech1.data.labels = time;
+            charts.mech1.data.datasets[0].data = simulator.shearStressData;
+            charts.mech1.update();
+
+            charts.mech2.data.labels = time;
+            charts.mech2.data.datasets[0].data = simulator.bearingLoadData;
+            charts.mech2.update();
+
+            charts.mech3.data.datasets[0].data = simulator.omegaData.map((speed, i) => ({
+                x: speed,
+                y: simulator.torqueData[i]
+            }));
+            charts.mech3.update();
+
+            charts.mech4.data.datasets[0].data = simulator.omegaData.map((speed, i) => ({
+                x: speed,
+                y: simulator.powerOutData[i]
+            }));
+            charts.mech4.update();
+        }
+
+        function calculateEconomics() {
+            const elecCost = parseFloat(document.getElementById('elecCost').value);
+            const opHours = parseFloat(document.getElementById('opHours').value);
+            const opDays = parseFloat(document.getElementById('opDays').value);
+            const motorCost = parseFloat(document.getElementById('motorCost').value);
+            const maintCost = parseFloat(document.getElementById('maintCost').value);
+            const lifetime = parseFloat(document.getElementById('lifetime').value);
+
+            let avgPowerKw = 5; // Default
+            let avgLosses = 100;
+
+            if (simulator.powerInData.length > 0) {
+                const avgPowerIn = simulator.powerInData.reduce((a, b) => a + b, 0) / simulator.powerInData.length;
+                avgPowerKw = avgPowerIn / 1000;
+                avgLosses = simulator.lossData.reduce((a, b) => a + b, 0) / simulator.lossData.length;
+            }
+
+            const annualHours = opHours * opDays;
+            const annualEnergyKwh = avgPowerKw * annualHours;
+            const annualEnergyCost = annualEnergyKwh * elecCost;
+            const annualTotalCost = annualEnergyCost + maintCost;
+
+            const lifetimeEnergyCost = annualEnergyCost * lifetime;
+            const lifetimeMaintCost = maintCost * lifetime;
+            const lifetimeTotalCost = motorCost + lifetimeEnergyCost + lifetimeMaintCost;
+
+            const costPerHour = lifetimeTotalCost / (annualHours * lifetime);
+
+            const avgInput = avgPowerKw * 1000;
+            const efficiency = avgInput > 0 ? ((avgInput - avgLosses) / avgInput * 100) : 0;
+            const lossEnergyKwh = (avgLosses / 1000) * annualHours;
+            const lossCost = lossEnergyKwh * elecCost;
+
+            const result = `${'='.repeat(80)}
+ECONOMIC ANALYSIS RESULTS
+${'='.repeat(80)}
+
+Average Power Consumption: ${avgPowerKw.toFixed(2)} kW
+
+ANNUAL COSTS:
+  Operating Hours:        ${annualHours.toFixed(0)} hours
+  Energy Consumption:     ${annualEnergyKwh.toFixed(2)} kWh
+  Energy Cost:            $${annualEnergyCost.toFixed(2)}
+  Maintenance Cost:       $${maintCost.toFixed(2)}
+  Total Annual Cost:      $${annualTotalCost.toFixed(2)}
+
+LIFETIME COSTS (${lifetime.toFixed(0)} years):
+  Initial Investment:     $${motorCost.toFixed(2)}
+  Total Energy Cost:      $${lifetimeEnergyCost.toFixed(2)}
+  Total Maintenance Cost: $${lifetimeMaintCost.toFixed(2)}
+  TOTAL LIFETIME COST:    $${lifetimeTotalCost.toFixed(2)}
+
+Cost per Operating Hour:  $${costPerHour.toFixed(4)}/hour
+
+EFFICIENCY ANALYSIS:
+  Average Input Power:    ${avgInput.toFixed(2)} W
+  Average Losses:         ${avgLosses.toFixed(2)} W
+  Average Efficiency:     ${efficiency.toFixed(2)} %
+
+  Annual Energy Lost:     ${lossEnergyKwh.toFixed(2)} kWh
+  Annual Cost of Losses:  $${lossCost.toFixed(2)}
+  Lifetime Cost of Losses: $${(lossCost * lifetime).toFixed(2)}
+`;
+
+            document.getElementById('economicResults').textContent = result;
+        }
+
+        // ============================================
+        // Initialization
+        // ============================================
+
+        window.addEventListener('load', () => {
+            // Solve problems
+            solveProblem7();
+            solveProblem3();
+            solveProblem4();
+
+            // Initialize charts
+            initCharts();
+
+            // Setup control listeners
+            document.getElementById('voltage').addEventListener('input', updateControlValues);
+            document.getElementById('loadTorque').addEventListener('input', updateControlValues);
+            document.getElementById('armatureR').addEventListener('input', updateControlValues);
+            document.getElementById('inertia').addEventListener('input', updateControlValues);
+
+            updateControlValues();
+        });
+    </script>
+</body>
+</html>

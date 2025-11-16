@@ -54,6 +54,24 @@ This leads to a quadratic equation:
 
 ## Features
 
+### HTML Version Features
+The HTML version (`dc_motor_simulator.html`) is a complete web-based application with:
+- **Modern responsive design** with gradient backgrounds and smooth animations
+- **Zero installation** - just open in any web browser
+- **Real-time interactive simulation** using Chart.js for visualization
+- **Six analysis tabs**:
+  1. Problem Solutions (Problems 3, 4, and 7 with complete solutions)
+  2. Motor Simulation (real-time dynamic simulation)
+  3. Thermal Analysis (4 thermal charts)
+  4. Loss Analysis (pie chart, efficiency curves)
+  5. Economic Analysis (ROI calculator)
+  6. Mechanical Stress (shaft stress, bearing loads)
+- **Interactive controls** with sliders and radio buttons
+- **Real-time status panel** showing current operating conditions
+- **Fully self-contained** - single HTML file with embedded CSS and JavaScript
+
+### Python Version Features
+
 ### 1. User Interface (Tkinter GUI)
 - **Multi-tab interface** with organized functionality
 - **Problem Solutions tab**: Displays theoretical problem solutions
@@ -209,10 +227,33 @@ sudo dnf install python3-tkinter
 
 ## Usage
 
-### Running the Full Application
+### Option 1: Web Browser (HTML Version) - Recommended
+Simply open `dc_motor_simulator.html` in any modern web browser:
+```bash
+# Linux/macOS
+xdg-open dc_motor_simulator.html    # Linux
+open dc_motor_simulator.html        # macOS
+
+# Windows
+start dc_motor_simulator.html
+
+# Or simply double-click the file in your file manager
+```
+
+**Advantages:**
+- No installation required
+- Works on any platform with a web browser
+- Beautiful responsive interface
+- Interactive real-time simulation
+- All features included (Problem Solutions, Simulation, Thermal, Loss, Economic, Mechanical Analysis)
+
+### Option 2: Python Application (Tkinter Version)
 ```bash
 python3 dc_motor_simulator.py
 ```
+
+**Requirements:**
+- Python 3.x with tkinter, numpy, scipy, matplotlib
 
 ### Running Problem 7 Calculation Only
 ```bash
