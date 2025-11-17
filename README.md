@@ -36,6 +36,35 @@ A comprehensive application for DC motor analysis, simulation, and educational p
      - Auto-scaling responsive interface
    - See [SHUNT_MOTOR_README.md](SHUNT_MOTOR_README.md) for detailed documentation
 
+### 4. **🔌 Salient-Pole Synchronous Generator Simulator** - `example_7_3_advanced_simulator.py`
+   - **NEW! Advanced synchronous generator analysis and simulation**
+   - **Solves Example 7.3** - Salient-pole synchronous generator with slip test
+   - **Multi-Physics Simulation**: Electromagnetic-Thermal-Mechanical coupling
+   - **Theoretical Solution**:
+     - Synchronous reactances: Xsd = 10.177 Ω, Xsq = 5.180 Ω
+     - Nominal field current: Ifn = 14.089 A
+     - Field voltage at 120°C: Vf = 16.547 V
+   - **Interactive Features**:
+     - Real-time parameter adjustment (power factor, load current, field current, speed, torque)
+     - Multiple ODE solvers (RK45, Euler)
+     - 4 Interactive Tabs: Controls, Results, Economics, Losses
+     - Auto-scaling dynamic visualization (6 simultaneous plots)
+   - **Advanced Models**:
+     - D-Q axis representation with salient-pole effects
+     - Coupled thermal dynamics (stator and rotor)
+     - Mechanical shaft dynamics with inertia and damping
+     - Comprehensive loss breakdown (copper, iron, friction, stray)
+   - **Economic Analysis**:
+     - Levelized Cost of Energy (LCOE)
+     - Annual operating costs
+     - Present value calculations
+     - Multi-scenario analysis (2000-8760 hours/year)
+   - **Jupyter Notebook Version**: `example_7_3_interactive_lab.ipynb`
+     - Better browser compatibility
+     - Step-by-step educational format
+     - Enhanced visualization
+   - See [README_EXAMPLE_7_3.md](README_EXAMPLE_7_3.md) for detailed documentation
+
 ## Problem 7 Solution
 
 ### Problem Statement
