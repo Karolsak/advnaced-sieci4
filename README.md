@@ -36,6 +36,30 @@ A comprehensive application for DC motor analysis, simulation, and educational p
      - Auto-scaling responsive interface
    - See [SHUNT_MOTOR_README.md](SHUNT_MOTOR_README.md) for detailed documentation
 
+### 4. **🔄 Alternator EMF & Multi-Physics Simulator** - `alternator_emf_simulator.py`
+   - **NEW! Advanced alternator and AC/DC machine analysis**
+   - **Solves AC-DC conversion problem**: 4-pole, 50-Hz alternator with lap/wave winding
+   - **Comprehensive multi-physics simulation**: Coupled electromagnetic-thermal-mechanical analysis
+   - **Advanced ODE solvers**: RK45, RK23, DOP853, and Euler methods
+   - **6 Interactive Tabs**:
+     - **Main Calculations**: EMF calculations for star/delta AC and lap/wave DC configurations
+     - **Dynamic Simulation**: Real-time ODE simulation with 6 synchronized graphs
+     - **Multi-Physics Analysis**: Coupled differential equations (electromagnetic-thermal-mechanical)
+     - **Losses Analysis**: Detailed breakdown (copper, iron, mechanical, stray) with visualizations
+     - **Economic Analysis**: Lifecycle costs, LCOE, sensitivity analysis
+     - **Advanced Controls**: AVR, governor control, thermal derating curves
+   - **Key Features**:
+     - Star/Delta connection analysis with RMS voltage/current
+     - Lap/Wave DC winding EMF calculation
+     - Real-time parameter adjustment with sliders
+     - Temperature-dependent resistance modeling
+     - Thermal derating analysis with visualization
+     - Detailed loss breakdown (pie charts and bar graphs)
+     - Economic lifecycle cost analysis
+     - Auto-scaling responsive interface
+     - Configuration save/load (JSON)
+   - **Solved Problem**: For a 4-pole, 50-Hz, star-connected alternator (15 slots/pole, 10 conductors/slot, Kw=0.95, VL=1825V), calculates EMF for lap-connected DC configuration → **Answer: 750V**
+
 ## Problem 7 Solution
 
 ### Problem Statement
